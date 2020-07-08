@@ -30,7 +30,8 @@
 
       <el-table-column label="操作">
       <template slot-scope="{row, $index}">
-        <el-button size="small" type="warning" icon="el-icon-edit">编辑</el-button>
+        <el-button size="small" type="warning" icon="el-icon-edit" 
+          @click="showUpdate(row)">修改</el-button>
         <el-button size="small" type="danger" icon="el-icon-delete">删除</el-button>
       </template>
     </el-table-column>
@@ -48,7 +49,7 @@
       @size-change="handleSizeChage">
     </el-pagination>
 
-    <el-dialog title="添加" :visible.sync="isShowDialog">
+    <el-dialog :title="form.id ? '更新' : '添加'" :visible.sync="isShowDialog">
       <el-form :model="form" label-width="120px" style="width: 80%">
         <el-form-item label="品牌名称">
           <el-input v-model="form.tmName" autocomplete="off" placeholder="请输入品牌名称"></el-input>
@@ -73,7 +74,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="isShowDialog = false">取 消</el-button>
-        <el-button type="primary" @click="isShowDialog = false">确 定</el-button>
+        <el-button type="primary" @click="addOrUpdate">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -107,9 +108,63 @@ export default {
   methods: {
 
     /* 
+    请求添加或更新
+    */
+    async addOrUpdate () {
+
+      // 读取收集的请求参数数据
+      const trademark = this.form
+      let result
+      try {
+        // 发添加/更新的请求
+        if (trademark.id) {
+          result = await this.$API.trademark.update(trademark)
+        } else {
+          result = await this.$API.trademark.add()
+        }
+        // 成功了...
+        // 提示
+        this.$message.success(result.message || '保存品牌成功')
+        // 重新获取分页列表显示
+          // 添加 => 显示第1页面
+          // 修改 => 显示当前页面
+        this.getTrademarks(trademark.id ? this.page : 1)
+        // 关闭当前dialog
+        this.isShowDialog = false
+      } catch (error) {  // 要做错误提示之外事情
+        this.form = { // 重置一下数据
+          tmName: '',
+          logoUrl: ''
+        }
+        // 失败...
+        console.log('保存品牌失败了...')
+        // this.$message.error('保存品牌失败了')
+      }
+    },
+
+    /* 
+    显示修改界面
+    */
+    showUpdate (trademark) { // {id: 1, tmName: '', logoUrl: ''}
+      // 保存指定的品牌到form
+      // this.form = trademark  // 列表与修改界面引用的是同一个品牌对象  ==> 有问题
+      // 给form的应该是trademark的一个拷贝对象
+      this.form = {...trademark} // 浅拷贝
+ 
+      // 显示
+      this.isShowDialog = true
+    },
+
+    /* 
     显示添加界面
     */
     showAdd () {
+      // 重置form对象  ==> 不要显示前面的form对象中的数据
+      this.form = {
+        tmName: '',
+        logoUrl: ''
+      }
+      // 显示
       this.isShowDialog = true
     },
 
