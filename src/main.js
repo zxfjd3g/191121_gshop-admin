@@ -45,6 +45,8 @@ Vue.component('CategorySelector', CategorySelector)
 // 挂载到Vue原型对象上, 以便组件中直接可见
 Vue.prototype.$hasBP = hasBtnPermission
 Vue.prototype.$API = API
+Vue.prototype.$BASE_PATH = process.env.VUE_APP_BASE_API
+
 
 // 引入mockjs的配置, 不使用
 /**

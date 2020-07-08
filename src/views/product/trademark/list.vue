@@ -1,10 +1,11 @@
 <template>
   <div>
-    <el-button type="primary" icon="el-icon-plus">添加</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="showAdd">添加</el-button>
 
     <el-table
       style="margin: 20px 0"
       border
+      v-loading="loading"
       :data="trademarks">
       
        <el-table-column
@@ -33,7 +34,6 @@
         <el-button size="small" type="danger" icon="el-icon-delete">删除</el-button>
       </template>
     </el-table-column>
-
     </el-table>
 
     <el-pagination
@@ -47,6 +47,36 @@
       @current-change="getTrademarks"
       @size-change="handleSizeChage">
     </el-pagination>
+
+    <el-dialog title="添加" :visible.sync="isShowDialog">
+      <el-form :model="form" label-width="120px" style="width: 80%">
+        <el-form-item label="品牌名称">
+          <el-input v-model="form.tmName" autocomplete="off" placeholder="请输入品牌名称"></el-input>
+        </el-form-item>
+        <el-form-item label="品牌LOGO">
+          <!-- 
+            action: 用来指定上传图片的接口地址   指定动态的代理前缀路径
+            on-success: 指定上传成功后的回调函数
+            before-upload: 指定发送上传请求前的回调函数 => 如果函数返回false不提交请求
+           -->
+          <el-upload
+            class="avatar-uploader"
+            :action="$BASE_PATH + '/admin/product/fileUpload'"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload">
+            <img v-if="form.logoUrl" :src="form.logoUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过50kb</div>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="isShowDialog = false">取 消</el-button>
+        <el-button type="primary" @click="isShowDialog = false">确 定</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -60,6 +90,13 @@ export default {
       total: 0, // 总数量
       page: 1, // 当前第几页
       limit: 3, // 每页数量
+      loading: false, // 是否显示loading
+
+      isShowDialog: false, // 是否显示添加/更新的界面
+      form: { // 用于收集添加和更新的品牌信息对象
+        tmName: '', // 品牌名称
+        logoUrl: '', // 品牌图上url
+      },
     }
   },
 
@@ -68,14 +105,54 @@ export default {
   },
 
   methods: {
+
+    /* 
+    显示添加界面
+    */
+    showAdd () {
+      this.isShowDialog = true
+    },
+
+    /* 
+     on-success: 指定上传成功后的回调函数
+     res: 请求返回的响应体
+     file: 上传的图片文件对象
+    */
+    handleAvatarSuccess(res, file) {
+      console.log('handleAvatarSuccess', res, file)
+      // 读取响应数据对象中的图片url数据保存到form对象
+      this.form.logoUrl = res.data
+    },
+
+    /* 
+    指定发送上传请求前的回调函数 => 如果函数返回false不提交请求
+    专门用来对要上传文件进行检查限制: 
+    大小: <50K
+    类型: jpg/png
+    */
+    beforeAvatarUpload(file) {
+      const isJPGOrPNG = file.type === 'image/jpeg' || file.type==='image/png'
+      const isLt50K = file.size / 1024 <= 50
+
+      if (!isJPGOrPNG) {
+        this.$message.error('上传图片只能是 JPG/PNG 格式!')
+      }
+      if (!isLt50K) {
+        this.$message.error('上传头像图片大小不能超过 50K!')
+      }
+      return isJPGOrPNG && isLt50K
+    },
+
     /* 
     异步获取指定页码的分页数据显示
     */
     async getTrademarks (page) {
       // 保存指定页码
       this.page = page
+      this.loading = true // 显示loading
       // ajax请求获取分页列表
       const result = await this.$API.trademark.getList(page, this.limit)
+      this.loading = false //隐藏loading
       // 取出records和total数据
       const {records, total} = result.data
       // 更新数据
@@ -104,3 +181,29 @@ export default {
   }
 }
 </script>
+
+<style>
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
+</style>
