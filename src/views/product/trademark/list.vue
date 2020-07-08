@@ -38,12 +38,14 @@
 
     <el-pagination
       background
-      :style="{textAlign: 'center'}"
-      :current-page="1"
+      style="textAlign:center"
+      :current-page="page"
       :page-sizes="[3, 6, 9, 12]"
-      :page-size="3"
+      :page-size="limit"
       layout="prev, pager, next, jumper, ->, sizes, total"
-      :total="400">
+      :total="total"
+      @current-change="getTrademarks"
+      @size-change="handleSizeChage">
     </el-pagination>
   </div>
 </template>
@@ -54,29 +56,51 @@ export default {
 
   data() {
     return {
-      trademarks:  [
-        {
-          "id": 245,
-          "tmName": "香奈儿",
-          "logoUrl": "http://182.92.128.115:8080/group1/M00/00/20/rBFUDF71kVmAKHqYAAIQgg_aZlk465.png"
-        },
-        {
-          "id": 246,
-          "tmName": "飞哥同款座驾",
-          "logoUrl": "http://182.92.128.115:8080/group1/M00/00/21/rBFUDF756maAH_W9AAN7u_Z7feg582.jpg"
-        },
-        {
-          "id": 247,
-          "tmName": "长虹",
-          "logoUrl": "http://182.92.128.115:8080/group1/M00/00/0D/rBFUDF7ItKmARAwgAAAGoVnFwgQ886.jpg"
-        }
-      ]
+      trademarks:  [], // 当前页品牌数组
+      total: 0, // 总数量
+      page: 1, // 当前第几页
+      limit: 3, // 每页数量
     }
   },
 
   async mounted () {
-    const result = await this.$API.trademark.getList(1, 3)
-    console.log('---', result)
+    this.getTrademarks(1)
+  },
+
+  methods: {
+    /* 
+    异步获取指定页码的分页数据显示
+    */
+    async getTrademarks (page) {
+      // 保存指定页码
+      this.page = page
+      // ajax请求获取分页列表
+      const result = await this.$API.trademark.getList(page, this.limit)
+      // 取出records和total数据
+      const {records, total} = result.data
+      // 更新数据
+      this.trademarks = records
+      this.total = total
+    },
+
+    /* 
+    当每页数量发生改变的监听回调
+    */
+    handleSizeChage (pageSize) {
+      // 更新每页数量
+      this.limit = pageSize
+      // 重新获取第1页显示
+      this.getTrademarks(1)
+    }
+
+    /* 
+    当分页的当前页码改变的事件监听回调
+    */
+    // handleCurrentChange (page) {
+    //   // 更新当前页码
+    //   // 重新获取列表数据显示
+    //   this.getTrademarks(page)
+    // }
   }
 }
 </script>

@@ -81,15 +81,3 @@ export default {
     return request.delete(`${api_name}/remove/${id}`)
   }
 }
-
-export function fn(params) {
-  
-}
-
-/* 
-
-{
-  default: {}
-  fn: () => {}
-}
-*/
