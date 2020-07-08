@@ -32,7 +32,8 @@
       <template slot-scope="{row, $index}">
         <el-button size="small" type="warning" icon="el-icon-edit" 
           @click="showUpdate(row)">修改</el-button>
-        <el-button size="small" type="danger" icon="el-icon-delete">删除</el-button>
+        <el-button size="small" type="danger" icon="el-icon-delete" 
+          @click="deleteTrademark(row)">删除</el-button>
       </template>
     </el-table-column>
     </el-table>
@@ -106,6 +107,37 @@ export default {
   },
 
   methods: {
+
+    /* 
+    删除指定品牌
+    */
+    deleteTrademark (trademark) {
+      this.$confirm(`确定删除 ${trademark.tmName} 吗?`, '提示', {
+          type: 'warning'
+        }).then(async () => { // 点击确定的回调
+          // 发删除品牌的请求
+          const result = await this.$API.trademark.removeById(trademark.id)
+          // 请求成功后提示, 重新获取分页列表显示
+          this.$message.success(result.message || '删除成功!')
+          /* 
+          如果当前是第一页且只有1条数据: 不需要再发请求了
+          */
+          if (this.page===1 && this.trademarks.length===1) return
+          /* 
+          如果当前页面数量>1 ==> 显示当前页
+          否则 ==> 显示上一页
+          */
+          this.getTrademarks(this.trademarks.length>1 ? this.page : this.page - 1)
+        }).catch((error) => { // 点击取消的回调
+          console.log('---', error)  // 点击取消时error是'cancel'
+          if (error==='cancel') {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })   
+          }
+        })
+    },
 
     /* 
     请求添加或更新
