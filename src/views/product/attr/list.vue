@@ -168,17 +168,12 @@ export default {
       // 提交添加/更新的请求
       const result = await this.$API.attr.addOrUpdate(attr)
       // 成功了, ...
-      if (result.code===200) {
-        // 提示成功
-        this.$message.success('保存属性成功')
-        // 变为属性列表模式
-        this.isShowList = true
-        // 重新获取列表显示
-        this.getAttrs()
-      } else { // 失败了, 提示
-        this.$message.error('保存属性失败')
-      }
-      
+      // 提示成功
+      this.$message.success('保存属性成功')
+      // 变为属性列表模式
+      this.isShowList = true
+      // 重新获取列表显示
+      this.getAttrs()
     },
 
     /* 

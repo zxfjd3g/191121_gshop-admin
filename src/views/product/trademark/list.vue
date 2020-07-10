@@ -24,7 +24,12 @@
       <el-table-column
         label="品牌LOGO">
          <template slot-scope="{row, $index}">
-          <img :src="row.logoUrl" alt="" style="width: 100px;height:60px">
+          <el-image :src="row.logoUrl" alt="" style="width: 100px;height:60px" lazy>
+             <!-- <div slot="placeholder" class="image-slot">
+              加载中<span class="dot">...</span>
+            </div> -->
+            <img slot="placeholder" src="@/assets/loading.gif" alt="">
+          </el-image>
         </template>
       </el-table-column>
 
