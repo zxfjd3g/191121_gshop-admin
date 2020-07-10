@@ -29,11 +29,12 @@
     </el-form-item>
 
     <el-form-item label="销售属性">
-      <el-select value="" :placeholder="unusedSaleAttrList.length>0 ? `还有${unusedSaleAttrList.length}未使用`: '没有啦'">
-        <el-option :label="attr.name" :value="attr.id" v-for=" attr in unusedSaleAttrList"
+      <el-select v-model="attrIdAttrName" :placeholder="unusedSaleAttrList.length>0 ? `还有${unusedSaleAttrList.length}未使用`: '没有啦'">
+        <el-option :label="attr.name" :value="attr.id +':' + attr.name" v-for=" attr in unusedSaleAttrList"
           :key="attr.id"></el-option>
       </el-select>
-      <el-button type="primary" icon="el-icon-plus">添加销售属性</el-button>
+      <el-button type="primary" icon="el-icon-plus" :disabled="!attrIdAttrName" 
+        @click="addSpuSaleAttr">添加销售属性</el-button>
 
       <el-table border style="margin: 20px 0" :data="spuInfo.spuSaleAttrList">
         <el-table-column label="序号" type="index" width="80" align="center"></el-table-column>
@@ -73,13 +74,14 @@
               v-if="row.edit"
               :ref="$index"
               size="small"
+              placeholder="名称"
+              v-model="row.saleAttrValueName"
+              @keyup.enter.native="handleInputConfirm(row, $index)"
+              @blur="handleInputConfirm(row, $index)"
             >
-              <!-- 
-                @keyup.enter.native="handleInputConfirm"
-                @blur="handleInputConfirm"
-               -->
+            <!-- v-model内部会自动给row添加一个新属性, 且是响应式的 -->
             </el-input>
-            <el-button v-else class="button-new-tag" size="small">+ 添加</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput(row, $index)">+ 添加</el-button>
             <!-- @click="showInput" -->
           </template>
         </el-table-column>
@@ -122,6 +124,7 @@ export default {
       spuImageList: [],  // spu图片数组
       trademarkList: [],
       saleAttrList: [],
+      attrIdAttrName: '', // 选择的销售属性的id与name组合:    id:name
     }
   },
 
@@ -164,6 +167,76 @@ export default {
   },
 
   methods: {
+
+    /* 
+    确定向Spu销售属性值列表中添加一个属性值对象
+    */
+    handleInputConfirm (spuSaleAttr, index) {
+        const {saleAttrValueName, baseSaleAttrId, spuSaleAttrValueList} = spuSaleAttr
+        console.log('======', saleAttrValueName, baseSaleAttrId)
+
+        // 条件1: 如果没有输入, 直接变为查看模式
+        if (!saleAttrValueName) {
+          spuSaleAttr.edit = false
+          return 
+        }
+
+        // 条件2: 如果输入的与原有的重复了==> 提示不能重复
+        const isRepeat = spuSaleAttrValueList.some(value => value.saleAttrValueName===saleAttrValueName)
+        if (isRepeat) {
+          this.$message.warning('不能重复')
+          // 输入框自动获取焦点
+          this.$refs[index].focus()
+          return
+        }
+
+
+        // 向Spu销售属性值列表中添加一个属性值对象
+        spuSaleAttrValueList.push({
+          saleAttrValueName,
+          baseSaleAttrId,
+        })
+        // 变为查看模式
+        spuSaleAttr.edit = false
+        // 清除收集的输入数据
+        spuSaleAttr.saleAttrValueName = ''
+
+    },
+
+    /* 
+    显示输入框
+    */
+    showInput (spuSaleAttr, index) {
+      // 显示输入框: 给spuSaleAttr对象指定edit属性为true
+      if (spuSaleAttr.hasOwnProperty('edit')) { // 有此属性
+        spuSaleAttr.edit = true
+      } else { // 没有 ==> $set()/set()
+        this.$set(spuSaleAttr, 'edit', true)
+      }
+
+      // 输入框显示之后 ==> 让输入框自动获得焦点
+      this.$nextTick(() => {
+        this.$refs[index].focus()
+      })
+    },
+
+    /* 
+    添加新的SPU销售属性
+    */
+    addSpuSaleAttr () {
+      // 得到销售属性的id与name
+      const [id, name] = this.attrIdAttrName.split(':') // id:name [id,  name]
+
+      // 向spuInfo.spuSaleAttrList数组中添加一个对象
+      this.spuInfo.spuSaleAttrList.push({
+        baseSaleAttrId: id,
+        saleAttrName: name,
+        spuSaleAttrValueList: []
+      })
+
+      // 清除收集的数据
+      this.attrIdAttrName = ''
+    },
 
     /* 
     初始化请求加载更新界面需要的所有数据  ==> 由父组件主动调用
@@ -289,6 +362,20 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
-
+<style>
+  .el-tag + .el-tag {
+    margin-left: 10px;
+  }
+  .button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
+  }
 </style>
