@@ -15,6 +15,7 @@
 
     <el-form-item label="SPU图片">
       <el-upload
+        multiple
         :file-list="spuImageList"
         :action="$BASE_PATH + '/admin/product/fileUpload'"
         list-type="picture-card"
@@ -64,8 +65,8 @@
               v-for="(attrValue, index) in row.spuSaleAttrValueList"
               closable
               :disable-transitions="false"
+              @close="row.spuSaleAttrValueList.splice(index, 1)"
               >
-              <!-- @close="handleClose(tag)" -->
               {{attrValue.saleAttrValueName}}
             </el-tag>
 
@@ -87,14 +88,19 @@
         </el-table-column>
         <el-table-column label="操作" width="150">
           <template slot-scope="{row, $index}">
-            <hint-button title="删除SPU" type="danger" size="mini" icon="el-icon-delete"></hint-button>
+            <el-popconfirm
+              title="确定删除吗?"
+              @onConfirm="spuInfo.spuSaleAttrList.splice($index, 1)"
+            >
+              <hint-button slot="reference" title="删除SPU" type="danger" size="mini" icon="el-icon-delete"></hint-button>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
     </el-form-item>
 
     <el-form-item>
-      <el-button type="primary">保存</el-button>
+      <el-button type="primary" @click="save">保存</el-button>
       <el-button @click="cancel">取消</el-button>
     </el-form-item>
   </el-form>
@@ -162,11 +168,103 @@ export default {
         // 要留下是未使用的
         return !used
       })
-
     }
   },
 
   methods: {
+
+    /* 
+    重置数据
+    */
+    resetData () {
+      this.dialogImageUrl = '' // 大图的url
+      this.dialogVisible = false // 是否显示大图的dialog
+      this.spuId = null
+      this.spuInfo = {
+        category3Id: '',  // 第三级分类id
+        spuName: '',
+        description: '',
+        tmId: '',
+        spuSaleAttrList: [],
+        spuImageList: []
+      }
+      this.spuImageList = []  // spu图片数组
+      this.trademarkList = []
+      this.saleAttrList = []
+      this.attrIdAttrName = '' // 选择的销售属性的id与name组合:    id:name
+    },
+
+    /* 
+    请求保存SPU信息
+    */
+    async save () {
+
+      // 得到参数数据
+      const {spuInfo, spuImageList} = this
+
+      // 整理1: spuInfo.spuImageList
+      /* spuImageList
+      从后台获取的图片文件对象的结构
+			{
+			    "id": 333,
+			    "spuId": 26,
+			    "imgName": "rBHu8l6UcKyAfzDsAAAPN5YrVxw870.jpg",
+			    "imgUrl": "http://47.93.148.192:8080/xxx.jpg",
+				 "name": "rBHu8l6UcKyAfzDsAAAPN5YrVxw870.jpg",
+				 "url":  "http://47.93.148.192:8080/xxx.jpg"
+			}
+		新上传的图片文件对象的结构
+			{
+				name: "e814ec6fd86c5a8c.jpg"
+				response: {
+					data: "http://182.92.128.115:8080/group1/xxx.jpg"
+				}
+				url: "blob:http://localhost:9529/a5199d82-0811-442d-9ec2-dafae83d9ed9"
+			}
+		提交保存/更新SPU请求的图片对象的结构(目标):
+			 {
+			    "imgName": "下载 (1).jpg",
+			    "imgUrl": "http://47.93.148.192:8080/xxx.jpg"
+			 }
+      */
+      spuInfo.spuImageList = spuImageList.map((item => ({
+        imgName: item.name,
+        imgUrl: item.response ? item.response.data : item.imgUrl 
+      })))
+
+      // 整理2: SPU销售属性列表 spuSaleAttrList
+      /* 
+      过滤掉没有属性值的属性对象
+      删除一些不必要的属性数据(为了界面显示而添加: saleAttrValueName/edit)
+      */
+     spuInfo.spuSaleAttrList = spuInfo.spuSaleAttrList.filter(attr => {
+       delete attr.saleAttrValueName
+       delete attr.edit
+       return attr.spuSaleAttrValueList.length>0
+     })
+
+      
+      // 发添加/更新的请求
+      const result = await this.$API.spu.addUpdate(spuInfo)
+
+      // 保存成功
+      this.resetData()
+      this.$message.success(result.meessage || '保存SPU成功')
+      // 显示列表页面
+      this.$emit('update:visible', false)
+      // 分发自定义事件通知父组件保存成功了
+      this.$emit('success')
+    },
+
+    /* 
+    取消 ==> 显示列表页面
+    */
+   cancel () {
+     this.resetData()
+      this.$emit('update:visible', false)
+      // 分发自定义事件通知父组件取消了操作
+      this.$emit('cancel')
+    },
 
     /* 
     确定向Spu销售属性值列表中添加一个属性值对象
@@ -200,7 +298,6 @@ export default {
         spuSaleAttr.edit = false
         // 清除收集的输入数据
         spuSaleAttr.saleAttrValueName = ''
-
     },
 
     /* 
@@ -260,7 +357,10 @@ export default {
     1). 获取所有品牌的列表trademarkList trademark.getList()
 		2). 获取所有销售属性的列表saleAttrList spu.getSaleAttrList()
     */
-    initLoadAddData () {
+    initLoadAddData (category3Id) {
+      // 保存category3Id
+      this.spuInfo.category3Id = category3Id
+
       this.getTrademarkList()
       this.getSaleAttrList()
     },
@@ -319,13 +419,7 @@ export default {
       this.saleAttrList = saleAttrList
     },
 
-    /* 
-    取消 ==> 显示列表页面
-    */
-    cancel () {
-      this.$emit('update:visible', false)
-    },
-
+   
     /* 
      on-success: 指定上传成功后的回调函数
      res: 请求返回的响应体

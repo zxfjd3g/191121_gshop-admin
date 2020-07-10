@@ -35,7 +35,7 @@
         </el-pagination>
       </div>
 
-      <SpuForm :visible.sync="isShowSpuForm" ref="spuForm"/>
+      <SpuForm :visible.sync="isShowSpuForm" ref="spuForm" @success="handleSuccess" @cancel="handleCancel"/>
       <!-- @update:visible="isShowSpuForm=$event" -->
 
     </el-card>
@@ -71,6 +71,24 @@ export default {
   methods: {
 
     /* 
+    处理自定义的保存成功的事件回调
+    */
+    handleSuccess () {
+      // 重新获取分页列表   添加 1, 修改 当前页
+      this.getSpuList(this.spuId ? this.page : 1)
+      // 重置标识
+      this.spuId = null
+    },
+
+    /* 
+    处理自定义的取消SPU操作的回调
+    */
+    handleCancel () {
+      // 重置标识
+      this.spuId = null
+    },
+
+    /* 
     显示SPU修改界面
      {
       "id": 26,
@@ -83,6 +101,9 @@ export default {
     }
     */
     showUpdate (spu) {
+      // 保存一个标识更新的数据
+      this.spuId = spu.id
+
       // 显示更新的界面
       this.isShowSpuForm = true
       this.$refs.spuForm.initLoadUpdateData(spu.id)
@@ -94,7 +115,7 @@ export default {
     showAdd () {
       // 显示添加的界面
       this.isShowSpuForm = true
-      this.$refs.spuForm.initLoadAddData()
+      this.$refs.spuForm.initLoadAddData(this.category3Id)
     },
 
     /* 
