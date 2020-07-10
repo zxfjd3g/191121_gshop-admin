@@ -1,5 +1,5 @@
 <template>
-  <el-form label-width="120px">
+  <el-form label-width="120px" v-show="visible">
     <el-form-item label="SPU名称">
       <el-input type="text" placeholder="SPU名称"></el-input>
     </el-form-item>
@@ -48,7 +48,7 @@
 
     <el-form-item>
       <el-button type="primary">保存</el-button>
-      <el-button>取消</el-button>
+      <el-button @click="cancel">取消</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -57,17 +57,88 @@
 export default {
   name: 'SpuForm',
 
+  props: {
+    visible: Boolean
+  },
+
   data() {
     return {
       dialogImageUrl: '',
-      dialogVisible: false
+      dialogVisible: false,
+      spuId: null,
+      spuInfo: {},
+      spuImageList: [],
+      trademarkList: [],
+      saleAttrList: []
     };
   },
 
   methods: {
+
+    /* 
+    初始化请求加载更新界面需要的所有数据  ==> 由父组件主动调用
+    1). 根据spuId请求获取spuInfo  spu.get(spuId)
+		2). 根据spuId请求获取spuImageList  sku.getSpuImageList (spuId)
+		3). 获取所有品牌的列表trademarkList trademark.getList()
+		4). 获取所有销售属性的列表saleAttrList spu.getSaleAttrList()
+    */
+    initLoadUpdateData(spuId) {
+      console.log('请求加载更新界面需要的数据')
+      this.spuId = spuId
+
+      this.getSpuInfo()
+      this.getSpuImageList()
+      this.getTrademarkList()
+      this.getSaleAttrList()
+    },
+
+    /* 
+    1). 根据spuId请求获取spuInfo  spu.get(spuId)
+    */
+    async getSpuInfo () {
+      const result = await this.$API.spu.get(this.spuId)
+      const spuInfo = result.data
+      this.spuInfo = spuInfo
+    },
+
+    /* 
+    2). 根据spuId请求获取spuImageList  sku.getSpuImageList (spuId)
+    */
+    async getSpuImageList () {
+      const result = await this.$API.sku.getSpuImageList(this.spuId)
+      const spuImageList = result.data
+      this.spuImageList = spuImageList
+    },
+
+    /* 
+    3). 获取所有品牌的列表trademarkList trademark.getList()
+    */
+    async getTrademarkList () {
+      const result = await this.$API.trademark.getList()
+      const trademarkList = result.data
+      this.trademarkList = trademarkList
+    },
+    /* 
+    4). 获取所有销售属性的列表saleAttrList spu.getSaleAttrList()
+    */
+    async getSaleAttrList () {
+      const result = await this.$API.spu.getSaleAttrList()
+      const saleAttrList = result.data
+      this.saleAttrList = saleAttrList
+    },
+
+    /* 
+    取消 ==> 显示列表页面
+    */
+    cancel () {
+      this.$emit('update:visible', false)
+    },
+
+
     handleRemove(file, fileList) {
       console.log(file, fileList);
     },
+    
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;

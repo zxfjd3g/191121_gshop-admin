@@ -14,7 +14,8 @@
           <el-table-column label="操作">
             <template slot-scope="{row, $index}">
               <hint-button title="添加SKU" type="primary" size="mini" icon="el-icon-plus"></hint-button>
-              <hint-button title="修改SPU" type="primary" size="mini" icon="el-icon-edit"></hint-button>
+              <hint-button title="修改SPU" type="primary" size="mini" icon="el-icon-edit"
+                @click="showUpdate(row)"></hint-button>
               <hint-button title="查看SKU" type="info" size="mini" icon="el-icon-info"></hint-button>
               <hint-button title="删除SPU" type="danger" size="mini" icon="el-icon-delete"></hint-button>
             </template>
@@ -34,7 +35,8 @@
         </el-pagination>
       </div>
 
-      <SpuForm v-show="isShowSpuForm"/>
+      <SpuForm :visible.sync="isShowSpuForm" ref="spuForm"/>
+      <!-- @update:visible="isShowSpuForm=$event" -->
 
     </el-card>
   </div>
@@ -54,15 +56,37 @@ export default {
       category1Id: null,
       category2Id: null,
       category3Id: null,
-      isShowSpuForm: true
+      isShowSpuForm: false
     }
   },
 
   mounted () {
+    // 为了方便测试
+    this.category1Id = 1
+    this.category2Id = 3
+    this.category3Id = 61
     this.getSpuList()
   },
 
   methods: {
+
+    /* 
+    显示SPU修改界面
+     {
+      "id": 26,
+      "spuName": "aa",
+      "description": "aaaa",
+      "category3Id": 61,
+      "tmId": 1,
+      "spuSaleAttrList": null,
+      "spuImageList": null
+    }
+    */
+    showUpdate (spu) {
+      // 显示更新的界面
+      this.isShowSpuForm = true
+      this.$refs.spuForm.initLoadUpdateData(spu.id)
+    },
 
     /* 
     选择某个分类的监听回调
