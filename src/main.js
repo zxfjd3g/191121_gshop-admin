@@ -6,6 +6,7 @@ import 'normalize.css/normalize.css'
 // 完整引入element-ui
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+// import './elements'
 
 // 引入es6模块化的测试模块
 import './test/es-module/test2'

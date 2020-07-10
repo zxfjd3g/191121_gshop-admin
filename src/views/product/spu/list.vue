@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-card style="margin-bottom: 20px">
-      <CategorySelector @categoryChange="handleCategoryChange"/>
+    <el-card style="margin-bottom: 20px" v-show="!isShowSkuForm">
+      <CategorySelector ref="cs" @categoryChange="handleCategoryChange"/>
     </el-card>
     <el-card>
-      <div v-show="!isShowSpuForm">
-        <el-button type="primary" icon="el-icon-plus" @click="showAdd">添加SPU</el-button>
+      <div v-show="!isShowSpuForm && !isShowSkuForm">
+        <el-button type="primary" icon="el-icon-plus" :disabled="!category3Id" @click="showAdd">添加SPU</el-button>
       
         <el-table border :data="spuList" style="margin: 20px 0">
           <el-table-column label="序号" type="index" width="80" align="center"></el-table-column>
@@ -13,11 +13,15 @@
           <el-table-column label="SPU描述" prop="description"></el-table-column>
           <el-table-column label="操作">
             <template slot-scope="{row, $index}">
-              <hint-button title="添加SKU" type="primary" size="mini" icon="el-icon-plus"></hint-button>
+              <hint-button title="添加SKU" type="primary" size="mini" icon="el-icon-plus"  
+                @click="showSkuAdd(row)"></hint-button>
               <hint-button title="修改SPU" type="primary" size="mini" icon="el-icon-edit"
                 @click="showUpdate(row)"></hint-button>
-              <hint-button title="查看SKU" type="info" size="mini" icon="el-icon-info"></hint-button>
-              <hint-button title="删除SPU" type="danger" size="mini" icon="el-icon-delete"></hint-button>
+              <hint-button title="查看SKU" type="info" size="mini" icon="el-icon-info"
+                @click="showSkuList(row)"></hint-button>
+              <el-popconfirm title="确定删除吗?" @onConfirm="deleteSpu(row.id)">
+                <hint-button slot="reference" title="删除SPU" type="danger" icon="el-icon-delete" size="mini"></hint-button>
+              </el-popconfirm>
             </template>
           </el-table-column>
         </el-table>
@@ -38,12 +42,29 @@
       <SpuForm :visible.sync="isShowSpuForm" ref="spuForm" @success="handleSuccess" @cancel="handleCancel"/>
       <!-- @update:visible="isShowSpuForm=$event" -->
 
+       <SkuForm ref="skuForm" v-show="isShowSkuForm" @cancel="isShowSkuForm=false" 
+        :saveSuccess="() => isShowSkuForm=false"></SkuForm>
+
     </el-card>
+
+    <el-dialog :title="`${spu.spuName} ==> SKU列表`" :visible.sync="isShowDialog">
+      <el-table :data="skuList" v-loading="loading">
+        <el-table-column prop="skuName" label="名称"></el-table-column>
+        <el-table-column prop="price" label="价格(元)"></el-table-column>
+        <el-table-column prop="weight" label="重置(KG)"></el-table-column>
+        <el-table-column label="默认图片">
+          <template slot-scope="{row, $index}">
+            <el-image :src="row.skuDefaultImg" style="width: 100px;height: 100px;" lazy></el-image>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import SpuForm from '../components/SpuForm'
+import SkuForm from '../components/SkuForm'
 export default {
   name: 'SpuList',
 
@@ -56,19 +77,71 @@ export default {
       category1Id: null,
       category2Id: null,
       category3Id: null,
-      isShowSpuForm: false
+      isShowSpuForm: false,
+
+      isShowSkuForm: false, 
+
+      spu: {},
+      skuList: [],
+      isShowDialog: false,
+      loading: false
     }
   },
 
   mounted () {
     // 为了方便测试
-    this.category1Id = 1
-    this.category2Id = 3
-    this.category3Id = 61
-    this.getSpuList()
+    // this.category1Id = 1
+    // this.category2Id = 3
+    // this.category3Id = 61
+    // this.getSpuList()
   },
 
   methods: {
+
+    /* 
+    删除指定ID的SPU
+    */
+    async deleteSpu (spuId) {
+      const result = await this.$API.spu.remove(spuId)
+      this.$message.success(result.message || '删除成功')
+      this.getSpuList()
+    },
+
+    /* 
+    显示SKU添加的表单界面
+    */
+    showSkuAdd (spu) {
+      this.isShowSkuForm = true
+
+      spu = {...spu} // 对spu进行浅拷贝, 以免更新列表中数据对象
+      spu.category1Id = this.category1Id
+      spu.category2Id = this.category2Id
+
+      // 让skuForm去请求加载初始显示需要的数据
+      this.$refs.skuForm.initLoadAddData(spu)
+    },
+
+    /* 
+    显示指定spu的sku列表
+    */
+    async showSkuList (spu) {
+      this.spu = spu
+      
+      // 显示dialog
+      this.isShowDialog = true
+      // 重置sku列表数据
+      this.skuList = []
+
+      this.loading = true
+      try {
+        // 请求获取数据列表并显示
+        const result = await this.$API.sku.getListBySpuId(spu.id)
+        this.loading = false
+        this.skuList = result.data
+      } catch (error) { // 请求失败也隐藏loading界面
+        this.loading = false
+      }
+    },
 
     /* 
     处理自定义的保存成功的事件回调
@@ -127,12 +200,14 @@ export default {
         this.category2Id = null
         this.category3Id = null
         this.spuList = []
+        this.total = 0
 
         this.category1Id = categoryId
       } else if (level===2) {
         // 重置三级数据
         this.category3Id = null
         this.spuList = []
+        this.total = 0
 
         this.category2Id = categoryId
       } else {
@@ -163,7 +238,8 @@ export default {
   },
 
   components: {
-    SpuForm
+    SpuForm,
+    SkuForm
   }
 }
 </script>

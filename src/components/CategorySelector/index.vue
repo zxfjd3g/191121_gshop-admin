@@ -36,6 +36,15 @@ export default {
     }
   },
 
+  watch: {
+    /* 
+    根据 isShowSpuForm的值来更新3级列表的可操作性
+    */
+    isShowSpuForm (value) { 
+      this.$refs.cs.disabled = value
+    } 
+  },
+
   mounted () {
     this.getCategory1List()
   },
