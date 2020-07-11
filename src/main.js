@@ -4,9 +4,9 @@ import Vue from 'vue'
 import 'normalize.css/normalize.css'
 
 // 完整引入element-ui
-import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
-// import './elements'
+// import ElementUI from 'element-ui'
+// import 'element-ui/lib/theme-chalk/index.css'
+import './elements'
 
 // 引入es6模块化的测试模块
 import './test/es-module/test2'
@@ -64,7 +64,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // 声明使用element插件
-Vue.use(ElementUI)
+// Vue.use(ElementUI)
 
 Vue.config.productionTip = false
 

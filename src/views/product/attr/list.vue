@@ -7,8 +7,8 @@
     <el-card>
       <div v-show="isShowList">
         <el-button type="primary" icon="el-icon-plus" style="margin-bottom: 20px" 
-          @click="showAdd" :disabled="!category3Id" v-if="$hasBP('attr.add')">添加属性</el-button>
-        
+          @click="showAdd" :disabled="!category3Id">添加属性</el-button>
+          <!-- v-if="$hasBP('attr.add')" -->
         <el-table border :data="attrs">
           <el-table-column label="序号" type="index" width="80" align="center"></el-table-column>
           
@@ -25,9 +25,11 @@
             <template slot-scope="{row, $index}">
               <HintButton title="修改" type="primary" icon="el-icon-edit" size="mini" 
                 @click="showUpdate(row)"></HintButton>
+                <!-- v-if="$hasBP('attr.edit')" -->
               <el-popconfirm
                 :title="`确定删除 '${row.attrName}' 吗`"
                 @onConfirm="deleteAttr(row.id)">
+                <!-- v-if="$hasBP('attr.delete')" -->
                 <hint-button slot="reference" title="删除" type="danger" icon="el-icon-delete" 
                   size="mini" />
               </el-popconfirm>
@@ -74,7 +76,6 @@
                 @onConfirm="attr.attrValueList.splice($index, 1)">
                 <HintButton slot="reference" title="删除" type="danger" icon="el-icon-delete" size="mini"></HintButton>
               </el-popconfirm>
-              
             </template>
           </el-table-column>
         </el-table>

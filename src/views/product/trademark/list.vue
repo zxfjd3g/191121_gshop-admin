@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- v-if="$hasBP('trademark.add')" -->
     <el-button type="primary" icon="el-icon-plus" @click="showAdd">添加</el-button>
 
     <el-table
@@ -35,8 +36,10 @@
 
       <el-table-column label="操作">
       <template slot-scope="{row, $index}">
+        <!-- v-if="$hasBP('trademark.edit')" -->
         <el-button size="small" type="warning" icon="el-icon-edit" 
           @click="showUpdate(row)">修改</el-button>
+        <!-- v-if="$hasBP('trademark.delete')" -->
         <el-button size="small" type="danger" icon="el-icon-delete" 
           @click="deleteTrademark(row)">删除</el-button>
       </template>

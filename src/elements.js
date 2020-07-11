@@ -80,15 +80,18 @@ import {
   Drawer,
   Popconfirm
 } from 'element-ui';
-import scrollbar from 'element-ui/lib/scrollbar'
+
+import Scrollbar from 'element-ui/lib/scrollbar'
 
 const msgbox = MessageBox
 const { alert, confirm, prompt } = msgbox
-const { service, directive } = Loading
 
-Vue.use(Drawer);
-Vue.use(Popconfirm);
-Vue.use(scrollbar);
+// Vue.component(Pagination.name, Pagination)
+// Vue.component(Scrollbar.name, Scrollbar)
+Vue.use(Scrollbar);  // 注册单独引入的隐藏组件
+Vue.use(Drawer); 
+Vue.use(Popconfirm); 
+
 Vue.use(Pagination);
 Vue.use(Dialog);
 Vue.use(Autocomplete);
@@ -163,9 +166,10 @@ Vue.use(Backtop);
 Vue.use(PageHeader);
 Vue.use(CascaderPanel);
 
-Vue.use(directive);
+Vue.use(Loading.directive);
 
-Vue.prototype.$loading = service;
+// Vue.prototype.$loading = Loading.service;
+// elements.js?9df0:161 Uncaught ReferenceError: _MessageBox is not defined
 Vue.prototype.$msgbox = msgbox;
 Vue.prototype.$alert = alert;
 Vue.prototype.$confirm = confirm;

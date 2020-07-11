@@ -29,18 +29,21 @@
 
       <el-table-column label="操作" width="250" align="center">
         <template slot-scope="{row}">
+          <!--  && $hasBP('sku.updown') -->
           <HintButton v-if="row.isSale == 0" title="上架" type="info" size="mini"
-            icon="el-icon-top" @click="onSale(row.id)" />
-
+            icon="el-icon-top" @click="onSale(row.id)"/>
+          <!--  && $hasBP('sku.updown') -->
           <HintButton v-if="row.isSale == 1" title="下架" type="success" size="mini"
-            icon="el-icon-bottom" @click="cancelSale(row.id)" />
+            icon="el-icon-bottom" @click="cancelSale(row.id)"/>
 
+          <!-- v-if="$hasBP('sku.edit')" -->
           <HintButton title="修改" type="primary" size="mini"
-            icon="el-icon-edit" @click="toUpdateSku(row.id)" />
+            icon="el-icon-edit" @click="toUpdateSku(row.id)"/>
 
+          <!-- v-if="$hasBP('sku.detail')" -->
           <HintButton title="查看详情" type="primary" size="mini"
-            icon="el-icon-info" @click="showSkuInfo(row.id)" />
-
+            icon="el-icon-info" @click="showSkuInfo(row.id)"/>
+          <!-- v-if="$hasBP('sku.delete')" -->
           <el-popconfirm :title="`确定删除 ${row.skuName} 吗`" @onConfirm="deleteSku(row.id)">
             <hint-button slot="reference" type="danger" size="mini" icon="el-icon-delete" title="删除"></hint-button>
           </el-popconfirm>

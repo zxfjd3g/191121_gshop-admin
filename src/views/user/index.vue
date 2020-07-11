@@ -31,9 +31,9 @@
       <el-table-column label="级别" prop="userLevel" />
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <hint-button title="查看" size="mini" type="primary" icon="el-icon-thumb" circle></hint-button>
-          <hint-button title="修改" size="mini" type="primary" icon="el-icon-edit" circle></hint-button>
-          <hint-button title="删除" size="mini" type="danger" icon="el-icon-delete" circle></hint-button>
+          <hint-button v-if="$hasBP('user.detail')" title="查看" size="mini" type="primary" icon="el-icon-thumb" circle></hint-button>
+          <hint-button v-if="$hasBP('user.edit')" title="修改" size="mini" type="primary" icon="el-icon-edit" circle></hint-button>
+          <hint-button v-if="$hasBP('user.delete')" title="删除" size="mini" type="danger" icon="el-icon-delete" circle></hint-button>
         </template>
       </el-table-column>
     </el-table>

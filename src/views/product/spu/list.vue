@@ -5,6 +5,7 @@
     </el-card>
     <el-card>
       <div v-show="!isShowSpuForm && !isShowSkuForm">
+        <!-- v-if="$hasBP('spu.add')" -->
         <el-button type="primary" icon="el-icon-plus" :disabled="!category3Id" @click="showAdd">添加SPU</el-button>
       
         <el-table border :data="spuList" style="margin: 20px 0">
@@ -13,12 +14,16 @@
           <el-table-column label="SPU描述" prop="description"></el-table-column>
           <el-table-column label="操作">
             <template slot-scope="{row, $index}">
+              <!-- v-if="$hasBP('sku.add')" -->
               <hint-button title="添加SKU" type="primary" size="mini" icon="el-icon-plus"  
                 @click="showSkuAdd(row)"></hint-button>
+              <!-- v-if="$hasBP('spu.update')" -->
               <hint-button title="修改SPU" type="primary" size="mini" icon="el-icon-edit"
                 @click="showUpdate(row)"></hint-button>
+              <!-- v-if="$hasBP('spu.detail')" -->
               <hint-button title="查看SKU" type="info" size="mini" icon="el-icon-info"
                 @click="showSkuList(row)"></hint-button>
+              <!-- v-if="$hasBP('spu.delete')" -->
               <el-popconfirm title="确定删除吗?" @onConfirm="deleteSpu(row.id)">
                 <hint-button slot="reference" title="删除SPU" type="danger" icon="el-icon-delete" size="mini"></hint-button>
               </el-popconfirm>

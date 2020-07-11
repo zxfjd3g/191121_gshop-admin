@@ -41,12 +41,12 @@
       <el-table-column label="操作" width="230" align="center">
         <template slot-scope="{row}">
           <HintButton type="info" size="mini" icon="el-icon-user-solid" title="分配角色"
-            v-if="$hasBP('user.add')" @click="showAssignRole(row)"/>
+            v-if="$hasBP('user.assgin')" @click="showAssignRole(row)"/>
           <HintButton type="primary" size="mini" icon="el-icon-edit" title="修改用户"
             v-if="$hasBP('user.update')" @click="showUpdateUser(row)"/>
           <el-popconfirm :title="`确定删除 ${row.username} 吗?`" @onConfirm="removeUser(row.id)">
             <HintButton slot="reference" type="danger" size="mini" icon="el-icon-delete" title="删除用户"
-              v-if="$hasBP('user.remove')"/> 
+              v-if="$hasBP('user.remove')"/>
           </el-popconfirm>
         </template>
       </el-table-column>
