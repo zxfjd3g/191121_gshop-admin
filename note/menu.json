@@ -3,50 +3,52 @@
   "code": 20000,
   "message": "成功",
   "data": {
-    "permissionList": [{
-      "redirect": "noredirect",
-      "path": "/acl",
-      "component": "Layout",
-      "hidden": false,
-      "children": [{
-        "path": "user/list",
-        "component": "/acl/user/list",
+    "permissionList": [
+      {
+        "redirect": "noredirect",
+        "path": "/acl",
+        "component": "Layout",
         "hidden": false,
+        "children": [{
+          "path": "user/list",
+          "component": "/acl/user/list",
+          "hidden": false,
+          "meta": {
+            "title": "用户管理"
+          },
+          "name": "name_1195268616021139457"
+        }, {
+          "path": "role/list",
+          "component": "/acl/role/list",
+          "hidden": false,
+          "meta": {
+            "title": "角色管理"
+          },
+          "name": "name_1195268788138598401"
+        }, {
+          "path": "role/auth/:id",
+          "component": "/acl/role/roleAuth",
+          "hidden": true,
+          "meta": {
+            "title": "角色权限"
+          },
+          "name": "name_1195270621548568578"
+        }, {
+          "path": "permission/list",
+          "component": "/acl/permission/list",
+          "hidden": false,
+          "meta": {
+            "title": "菜单管理"
+          },
+          "name": "name_1195268893830864898"
+        }],
         "meta": {
-          "title": "用户管理"
+          "icon": "lock",
+          "title": "权限管理"
         },
-        "name": "name_1195268616021139457"
-      }, {
-        "path": "role/list",
-        "component": "/acl/role/list",
-        "hidden": false,
-        "meta": {
-          "title": "角色管理"
-        },
-        "name": "name_1195268788138598401"
-      }, {
-        "path": "role/auth/:id",
-        "component": "/acl/role/roleAuth",
-        "hidden": true,
-        "meta": {
-          "title": "角色权限"
-        },
-        "name": "name_1195270621548568578"
-      }, {
-        "path": "permission/list",
-        "component": "/acl/permission/list",
-        "hidden": false,
-        "meta": {
-          "title": "菜单管理"
-        },
-        "name": "name_1195268893830864898"
-      }],
-      "meta": {
-        "icon": "lock",
-        "title": "权限管理"
-      },
-      "name": "name_1195268474480156673"
-    }, {
+        "name": "name_1195268474480156673"
+      }, 
+    {
       "redirect": "noredirect",
       "path": "/category",
       "component": "Layout",
@@ -65,7 +67,9 @@
         "title": "分类管理"
       },
       "name": "name_1237658989300568066"
-    }, {
+    }, 
+    
+    {
       "redirect": "noredirect",
       "path": "/product",
       "component": "Layout",
@@ -84,6 +88,7 @@
         "title": "商品管理"
       },
       "name": "name_1237887750713397250"
-    }]
+    }
+  ]
   }
 }

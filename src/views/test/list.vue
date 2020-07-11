@@ -1,6 +1,7 @@
 <template>
   <div>
-    <button>添加</button>
+    <button v-if="$hasBP('test.add')">添加</button>
+    <button v-if="$hasBP('test.update')">更新</button>
   </div>
 </template>
 

@@ -191,6 +191,7 @@ export default {
       this.dialogPermissionVisible = true
       this.permission.pid = row.id
       this.permission.level = row.level + 1
+      this.permission.type = this.permission.level===4 ? 2 : 1
 
       // 清除校验(必须在界面更新之后)
       this.$nextTick(() => this.$refs.permission.clearValidate())
@@ -202,6 +203,7 @@ export default {
     toUpdatePermission(row) {
       this.dialogPermissionVisible = true
       this.permission = {...row}  // 使用浅拷贝
+      this.permission.type = this.permission.level===4 ? 2 : 1
 
       // 清除校验(必须在界面更新之后)
       this.$nextTick(() => this.$refs.permission.clearValidate())
