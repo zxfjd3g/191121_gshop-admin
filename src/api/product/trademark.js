@@ -1,83 +1,65 @@
 /* 
-包含商品管理下的品牌管理的相关接口请求函数
+包含品牌相关接口请求函数
 */
-
-import request from '@/utils/request'
+import request from '@/utils/request'  // 相当于前面我们封装的ajax
 
 const api_name = '/admin/product/baseTrademark'
 
 export default {
 
   /* 
-  获取品牌的分页列表
+  获取品牌分页列表
     GET /admin/product/baseTrademark/{page}/{limit}
   获取所有品牌列表
     GET /admin/product/baseTrademark/getTrademarkList
   */
-  getList (page, limit) {
+  getList(page, limit) {
+    /* 
+    return request({
+      url: `${api_name}/${page}/${limit}`,
+      method: 'get',
+    }) */
     if (page && limit) {
-      return request({
-        url: `${api_name}/${page}/${limit}`,
-        method: 'GET',
-      })
-    } else {
-      return request.get(`${api_name}/getTrademarkList`)
+      return request.get(`${api_name}/${page}/${limit}`)
     }
+    return request.get(`${api_name}/getTrademarkList`)
   },
 
   /* 
-  获取指定id的品牌
+  根据ID获取品牌
   GET /admin/product/baseTrademark/get/{id}
   */
-  getById (id) {
+  get(id) {
     return request.get(`${api_name}/get/${id}`)
   },
 
   /* 
-  修改Trademark
-  PUT /admin/product/baseTrademark/update
-    {
-      "id": 0,
-      "logoUrl": "string",
-      "tmName": "string"
-    }
+  删除指定id的品牌
+    DELETE /admin/product/baseTrademark/remove/{id}
   */
-  update (trademark) { // 有id
-    // return request({ 
-    //   url: `${api_name}/update`,
-    //   method: 'PUT',
-    //   data: trademark
-    // })
-
-    return request.put(`${api_name}/update`, trademark)
+  remove(id) {
+    return request.delete(`${api_name}/remove/${id}`)
   },
 
   /* 
-  添加Trademark
-  POST /admin/product/baseTrademark/save
-    {
-      "logoUrl": "string",
-      "tmName": "string"
-    }
+  添加品牌
+    POST /admin/product/baseTrademark/save
+    trademark: 没有id的品牌对象
   */
-  add (trademark) {  // 没有id
-    // return request({
-    //   url: `${api_name}/save`,
-    //   method: 'POST',
-    //   data: trademark
-    // })
+ 
+  add (trademark) {
     return request.post(`${api_name}/save`, trademark)
   },
+  /* add({tmName, logoUrl}) {
+    return request.post(`${api_name}/save`, {tmName, logoUrl})
+  }, */
 
   /* 
-  删除trademark
-  DELETE /admin/product/baseTrademark/remove/{id}
+  更新品牌
+  PUT /admin/product/baseTrademark/update
+  trademark: 有id的品牌对象
   */
-  removeById(id) {
-    // return request({
-    //   url: `${api_name}/remove/${id}`,
-    //   method: 'DELETE'
-    // })
-    return request.delete(`${api_name}/remove/${id}`)
+  update (trademark) {
+    return request.put(`${api_name}/update`, trademark)
   }
 }

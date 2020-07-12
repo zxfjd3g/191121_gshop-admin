@@ -46,8 +46,7 @@ Vue.component('CategorySelector', CategorySelector)
 // 挂载到Vue原型对象上, 以便组件中直接可见
 Vue.prototype.$hasBP = hasBtnPermission
 Vue.prototype.$API = API
-Vue.prototype.$BASE_PATH = process.env.VUE_APP_BASE_API
-
+Vue.prototype.$BASE_API = process.env.VUE_APP_BASE_API
 
 // 引入mockjs的配置, 不使用
 /**
@@ -58,10 +57,10 @@ Vue.prototype.$BASE_PATH = process.env.VUE_APP_BASE_API
  * Currently MockJs will be used in the production environment,
  * please remove it before going online ! ! !
  */
-if (process.env.NODE_ENV === 'production') {
-  const { mockXHR } = require('../mock')
-  mockXHR()
-}
+// if (process.env.NODE_ENV === 'production') {
+//   const { mockXHR } = require('../mock')
+//   mockXHR()
+// }
 
 // 声明使用element插件
 // Vue.use(ElementUI)

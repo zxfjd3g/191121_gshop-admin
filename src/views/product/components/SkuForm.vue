@@ -7,8 +7,8 @@
     <el-form-item label="SKU 名称">
       <el-input type="text" placeholder="SKU 名称" v-model="skuInfo.skuName"></el-input>
     </el-form-item>
-
-    <el-form-item label="价格">
+    
+    <el-form-item label="价格(元)">
       <el-input type="number" placeholder="SKU 价格" v-model="skuInfo.price"></el-input>
     </el-form-item>
 
@@ -22,9 +22,9 @@
 
     <el-form-item label="平台属性">
       <el-form inline label-width="100px">
-        <el-form-item :label="attr.attrName" style="margin: 5px" v-for="attr in attrList" :key="attr.id">
-          <el-select v-model="attr.attrIdValueId">
-            <el-option :label="value.valueName" :value="attr.id + ':' + value.id" v-for="value in attr.attrValueList" :key="value.id"></el-option>
+        <el-form-item :label="attr.attrName" style="margin: 5px 0" v-for="attr in attrList" :key="attr.id">
+          <el-select placeholder="请输入" v-model="attr.attrIdValueId">
+            <el-option :label="value.valueName" :value="`${attr.id}:${value.id}`" v-for="value in attr.attrValueList" :key="value.id"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -32,9 +32,11 @@
 
     <el-form-item label="销售属性">
       <el-form inline label-width="100px">
-        <el-form-item :label="attr.saleAttrName" style="margin: 5px" v-for="attr in spuSaleAttrList" :key="attr.id">
-          <el-select v-model="attr.saleAttrValueId">
-            <el-option :label="value.saleAttrValueName" :value="value.id" v-for="value in attr.spuSaleAttrValueList" :key="value.id"></el-option>
+        <el-form-item :label="attr.saleAttrName" style="margin: 5px 0" 
+          v-for="attr in spuSaleAttrList" :key="attr.id">
+          <el-select v-model="attr.saleAttrValueId" placeholder="请输入">
+            <el-option :label="value.saleAttrValueName" :value="value.id" 
+              v-for="value in attr.spuSaleAttrValueList" :key="value.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -46,6 +48,7 @@
           type="selection"
           width="55">
         </el-table-column>
+
         <el-table-column label="图片">
           <template slot-scope="{row}">
             <img :src="row.imgUrl" alt="" style="width:100px;height:100px;">
@@ -54,8 +57,8 @@
         <el-table-column label="名称" prop="imgName"></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="{row, $index}">
-            <el-tag v-if="row.isDefault==='1'" type="success">默认</el-tag>
-            <el-button v-else type="primary" size="mini" @click="setDefaultImg(row)">设为默认</el-button>
+            <el-tag type="success" v-if="row.isDefault==='1'">默认</el-tag>
+            <el-button type="primary" size="small" v-else @click="setDefault(row)">设为默认</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -63,7 +66,7 @@
 
     <el-form-item>
       <el-button type="primary" @click="save">保存</el-button>
-      <el-button @click="back">返回</el-button>
+      <el-button @click="back">取消</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -73,35 +76,33 @@ export default {
   name: 'SkuForm',
 
   props: {
-    saveSuccess: Function,
+    cancel: Function
   },
 
   data () {
     return {
-      spu: {},
-
+      spu: {}, // 所属的spu对象
       skuInfo: {
-        // 父组件传过来的
-        category3Id: null,
-        spuId: null,
-        tmId: null,
+        // 下面3个数据从父组件传入收集
+			  category3Id: null, // 3级分类ID
+			  spuId: null, // SPU的id
+        tmId: null, // 品牌ID
+        
+        // 下面4个通过v-model收集
+			  skuName: null, // sku的名称
+			  skuDesc: null, // sku的描述
+			  price: null, // sku的价格
+        weight: null, // sku的重量
+        
+			  skuDefaultImg: null, // sku的默认图片  
+			  skuAttrValueList: [], // sku的属性值列表
+			  skuSaleAttrValueList: [], // sku属性属性值列表
+			  skuImageList: [], // 选择的spu图片列表
+			},
 
-        // 用户输入自动收集: v-model
-        skuName: null,
-        skuDesc: '',
-        price: null, // 输入后是数字字符串
-        weight: null, //  输入后是数字字符串
-
-        // 需要我们写代码去整理
-        skuDefaultImg: '', // 默认图片的url
-        skuAttrValueList: [], // 收集整理的sku平台属性值列表
-        skuSaleAttrValueList: [], // 收集整理的sku销售属性值列表
-        skuImageList: [], // 收集整理的sku图片数据列表
-      },
-
-      attrList: [], // 平台属性列表
-      spuSaleAttrList: [], // spu销售属性列表
-      spuImageList: [], // spu图片列表
+      attrList: [], // 平台属性数组
+      spuSaleAttrList: [], // spu销售属性数组
+      spuImageList: [], // spu图片数组
       selectedSpuImageList: [], // 所有选中的spu图片列表
     }
   },
@@ -109,192 +110,201 @@ export default {
   methods: {
 
     /* 
-    保存SKU信息
+    重置数据
+    */
+    resetData () {
+      this.spu = {}// 所属的spu对象
+      this.skuInfo = {
+        // 下面3个数据从父组件传入收集
+			  category3Id: null, // 3级分类ID
+			  spuId: null, // SPU的id
+        tmId: null, // 品牌ID
+        
+        // 下面4个通过v-model收集
+			  skuName: null, // sku的名称
+			  skuDesc: null, // sku的描述
+			  price: null, // sku的价格
+        weight: null, // sku的重量
+        
+			  skuDefaultImg: null, // sku的默认图片  
+			  skuAttrValueList: [], // sku的属性值列表
+			  skuSaleAttrValueList: [], // sku属性属性值列表
+			  skuImageList: [], // 选择的spu图片列表
+			}
+
+      this.attrList = [] // 平台属性数组
+      this.spuSaleAttrList = [] // spu销售属性数组
+      this.spuImageList = [] // spu图片数组
+      this.selectedSpuImageList = [] // 所有选中的spu图片列表
+    },
+
+    /* 
+    取消保存返回列表界面
+    */
+    // cancel () {  // 不能用这个名称, 与props传入的属性名称重复了
+    back () {
+      // 重置数据
+      this.resetData()
+
+      // 利用函数props向父组件通信
+      this.cancel()
+    },
+
+    /* 
+    保存当前输入收集的SPU信息
     */
     async save () {
-      // 整理收集的数据
+      // 取出请求需要的数据
       const {skuInfo, attrList, spuSaleAttrList, selectedSpuImageList} = this
-
-      // 整理1: skuAttrValueList
       /* 
-      数据来源: attrList
-        {
-            attrIdValueId: '1:207'  // 可能有, 也可能没有
-        }
-      目标数据结构:
-        {
-            "attrId": "1",
-            "valueId": "207"
-        }
+      整理1: 平台属性
+        目标数据: skuInfo.skuAttrValueList
+          {
+              "attrId": "2",
+              "valueId": "9"
+            }
+        现有数据: attrList
+          {
+            attrIdValueId: '2:9' // 可能没有
+          }
       */
-      // 只根据有attrIdValueId的attr来生成包含目标结构的数组
-      skuInfo.skuAttrValueList = attrList.reduce((pre, attr) => {
-        if (attr.attrIdValueId) {
-          const [attrId, valueId] = attr.attrIdValueId.split(':')
-          pre.push({
-            attrId,
-            valueId
-          })
-        }
-        return pre
-      }, [])
+     attrList.forEach(attr => {
+       if (attr.attrIdValueId) {
+         const [attrId, valueId] = attr.attrIdValueId.split(':') // ['2', '9']
+         skuInfo.skuAttrValueList.push({
+          attrId,
+          valueId
+         })
+       }
+     })
 
-      // 整理2: skuSaleAttrValueList
       /* 
-      数据来源: spuSaleAttrList
-        {
-            saleAttrValueId: '258'  // 可能有, 也可能没有
-        }
-      目标数据结构:
-        {
-            "saleAttrValueId": 258
-        }
+      整理2: 销售属性
+        目标数据: spuInfo.skuSaleAttrValueList
+          {
+              "saleAttrValueId": 258  
+            }
+        现有数据: spuSaleAttrList
+          {
+            saleAttrValueId: 258 // 可能没有
+          }
       */
-      // 只根据有saleAttrValueId的attr来生成包含目标结构的数组
-      skuInfo.skuSaleAttrValueList = spuSaleAttrList.reduce((pre, attr) => {
-        if (attr.saleAttrValueId) {
-          pre.push({
-            saleAttrValueId: attr.saleAttrValueId
-          })
-        }
-        return pre
-      }, [])
+     skuInfo.skuSaleAttrValueList = spuSaleAttrList.reduce((pre, attr) => {
+       if (attr.saleAttrValueId) {
+         pre.push({saleAttrValueId: attr.saleAttrValueId})
+       }
+       return pre
+     }, [])
 
-      // 整理3: skuImageList
-       /* 
-      数据来源: selectedSpuImageList
-        {
-            "id": 333,
-            "spuId": 26,
-            "imgName": "rBHu8l6UcKyAfzDsAAAPN5YrVxw870.jpg",
-            "imgUrl": "http://47.93.148.192:8080/xxx.jpg",
-            "isDefault": "1"  // 也可能是"0"
-        }
-      目标数据结构:
-        {
-            "imgName": "下载 (1).jpg",
-            "imgUrl": "http://47.93.148.192:8080/xxx.jpg",
-            "spuImgId": 337, // 当前Spu图片的id
-            "isDefault": "1"   // 默认为"1", 非默认为"0"
-        }
+      /* 
+      整理3: 图片列表
+        目标数据: spuInfo.skuImageList
+          {
+              "imgName": "下载 (1).jpg",
+              "imgUrl": "http://47.93.148.192:8080/xxx.jpg",
+              "spuImgId": 337, // 当前Spu图片的id
+              "isDefault": "1"   // 默认为"1", 非默认为"0"
+            }
+        现有数据: selectedSpuImageList
+          {
+              "id": 333,
+              "spuId": 26,
+              "imgName": "rBHu8l6UcKyAfzDsAAAPN5YrVxw870.jpg",
+              "imgUrl": "http://47.93.148.192:8080/xxx.jpg",
+            "isDefault": "1" / "0"
+          }
       */
-      skuInfo.skuImageList = selectedSpuImageList.map(image => ({
-        imgName: image.imgName,
-        imgUrl: image.imgUrl,
-        spuImgId: image.id, // 当前Spu图片的id
-        isDefault: image.isDefault   // 默认为"1", 非默认为"0"
+      skuInfo.skuImageList = selectedSpuImageList.map(item => ({
+        imgName: item.imgName,
+        imgUrl: item.imgUrl,
+        spuImgId: item.id, // 当前Spu图片的id
+        isDefault: item.isDefault  // 默认为"1", 非默认为"0"
       }))
 
-      // 发送异步ajax请求保存SKU信息
-      const result = await this.$API.sku.addUpdate(skuInfo)
-      // 成功了, ...
-      if (result.code===200) {
-        this.$message.success('保存SKU成功')
-        // 重置数据
-        this.resetData()
-        // 通知父组件保存成功
-        this.saveSuccess()
-      } else { //失败了, 提示
-        this.$message.error('保存SKU信息失败')
-      }
+      // 发请求
+      await this.$API.sku.addUpdate(skuInfo)
+      // 成功了...
+      this.$message.success('保存SKU成功')
+      // 重置数据
+      this.resetData()
+      // 通知父组件
+      this.$emit('success')
+      
+      // 失败了...
     },
 
     /* 
-    将当前图片设置为默认图片
+    勾选项的状态发生改变的事件监听回调
+    val: 是所有选中行的数据对象的数组
     */
-    setDefaultImg (spuImg) {
-      // 将所有图片都指定非默认的
+    handleSelectionChange (val) {
+      console.log('handleSelectionChange()', val) // 通过打印来查看回调函数的参数的具体情况
+      this.selectedSpuImageList = val
+    },
+
+    /* 
+    将指定图片设置为默认的
+    */
+    setDefault (image) {
+      // 需要将原来默认的变为非默认的 ==>得遍历
       this.spuImageList.forEach(item => item.isDefault = '0')
-      // 将当前spuImg指定为默认的
-      spuImg.isDefault = '1'
-      // 保存默认图片地址
-      this.skuInfo.skuDefaultImg = spuImg.imgUrl
+      // 将当前图片设置为默认的
+      image.isDefault = '1'
+      // 收集数据(默认图片)
+      this.skuInfo.skuDefaultImg = image.imgUrl
     },
 
     /* 
-    table列表选中发生改变的监听回调
-    value: 所有选中项对应图片对象的数组
-    */
-    handleSelectionChange (value) {
-      this.selectedSpuImageList = value
-    },
-    /* 
-    初始化加载数据
+    初始化请求加载添加界面需要的数据
     */
     initLoadAddData (spu) {
       this.spu = spu
-      // 将spu中的信息数据保存到skuInfo中
-      /* 
-      category3Id: null,
-      spuId: null,
-      tmId: null,
-      */
+
+      // 收集父组件传入的数据到skuInfo
+      // category3Id: null, // 3级分类ID
+      // spuId: null, // SPU的id
+      // tmId: null, // 品牌ID
       this.skuInfo.category3Id = spu.category3Id
       this.skuInfo.spuId = spu.id
       this.skuInfo.tmId = spu.tmId
 
-      // 请求获取所有需要显示的数据
-      this.getData()
+      // 请求获取数据显示
+      this.getAddData()
     },
 
     /* 
-    根据3个级别分类ID获取所有的平台属性列表: attr.getList
-    根据spu的ID获取SPU图片列表: sku.getSpuImageList
-    根据SPU的ID获取SPU销售属性列表: sku.getSpuSaleAttrList
-
-    利用Promise.all()批量发送多个请求
+    根据3个级别的分类ID获取所有平台属性列表: attr.getList (category1Id, category2Id, category3Id) 
+		根据spuId获取SPU图片列表: sku.getSpuImageList(spuId)
+    根据spuId获取spu销售属性列表: sku.getSpuSaleAttrList(spuId)
+    
+    只有当都成功时才更新数据显示  ===>  Promise.all(promises)
     */
-    async getData () {
+    getAddData () {
+      // 取出请求条件数据
       const {category1Id, category2Id, category3Id, id} = this.spu
-      const promise1 = this.$API.attr.getList(category1Id, category2Id, category3Id)
-      const promise2 = this.$API.sku.getSpuImageList(id)
-      const promise3 = this.$API.sku.getSpuSaleAttrList(id)
 
-      const results = await Promise.all([promise1, promise2, promise3])
-      // results: [{data:attrList}, {data: spuImageList}, {data: spuSaleAttrList}]
-      this.attrList = results[0].data
+      // 连续发送3个异步请求, 并得到其对应的promise
+      const promise1 = this.$API.attr.getList (category1Id, category2Id, category3Id) 
+      const promise2 = this.$API.sku.getSpuSaleAttrList(id)
+      const promise3 = this.$API.sku.getSpuImageList(id)
 
-      // 给得到的图片列表中的图片对象都添加一个isDefault属性 ===> 后面更新默认图片方便
-      const spuImageList = results[1].data.map(item => ({...item, isDefault: '0'}))
-      this.spuImageList = spuImageList
-      this.spuSaleAttrList = results[2].data
-    },
+      // 只有当都成功时才更新数据显示  ===>  Promise.all(promises)
+      Promise.all([promise1, promise2, promise3]).then(results => {
+        const attrList = results[0].data
+        const spuSaleAttrList = results[1].data
+        // 给spuImageList数组中的每个元素添加一个属性: isDefault='0'  开始都是非默认的
+        // const spuImageList = results[2].data.map(item => ({...item, isDefault: '0'}))
+        const spuImageList = results[2].data.map(item => {
+          item.isDefault = '0'
+          return item
+        })
 
-    /* 
-    取消返回列表界面
-    */
-    back () {
-      this.resetData()
-      this.$emit('cancel')
-    },
-
-    /* 
-    重置一下数据
-    */
-    resetData () {
-      this.skuInfo = {
-        category3Id: '',
-        spuId: '',
-        tmId: '',
-        skuName: '',
-        skuDesc: '',
-        price: '',
-        weight: '',
-        skuDefaultImg: '',
-        skuAttrValueList: [],
-        skuSaleAttrValueList: [],
-        skuImageList: [],
-      },
-      this.spu = {}, // 所属的SPU对象
-      this.attrList = [] // 平台属性列表
-      this.spuImageList = [] // SPU的图片列表
-      this.spuSaleAttrList = [] // SPU的销售属性列表
-      this.selectedImageList = [] // 所有选中图片对象的列表
-    },
+        // 更新数据
+        this.attrList = attrList
+        this.spuSaleAttrList = spuSaleAttrList
+        this.spuImageList = spuImageList
+      })
+    }
   }
 }
 </script>
-
-<style>
-
-</style>

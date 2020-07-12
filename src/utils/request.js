@@ -40,15 +40,10 @@ service.interceptors.response.use(
     code为非20000或200是抛错 可结合自己业务进行修改
     */
     if (result.code !== 20000 && result.code !== 200) {
-
-      // 提示业务请求操作不成功
-      if (result.code===20001) {
-        console.log('=====')
-        Message.error(result.message || '未知错误')
-      } else if (result.code===201) {
+      if (result.code===201) { // 删除商品相关的系统数据时, 错误信息保存在了data上
         Message.error(result.data || '未知错误')
       } else {
-        Message.error(result.data || result.message || '未知错误')
+        Message.error(result.message || '未知错误')
       }
 
       // 返回了一个失败的promise

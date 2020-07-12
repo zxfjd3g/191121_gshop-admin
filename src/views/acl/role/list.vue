@@ -212,10 +212,8 @@ export default {
         const result = await this.$API.role.removeById(id)
         this.getRoles(this.roles.length===1 ? this.page-1 : this.page)
         this.$message.success(result.message || '删除成功!')
-      }).catch((error) => {
-        if (error==='cancel') {
-          this.$message.info('已取消删除')
-        }
+      }).catch(() => {
+        this.$message.info('已取消删除')
       })
     },
 

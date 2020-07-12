@@ -38,8 +38,7 @@ router.beforeEach(async(to, from, next) => {
       } else { // 如果还没有登陆
         try {
           // 异步请求获取用户信息
-          // await store.dispatch('user/getInfo')
-          store.dispatch('user/getInfo')
+          await store.dispatch('user/getInfo')
           // 成功后, 请求获取当前用户的所有权限路由数组
           const asyncRoutes = await store.dispatch('permission/generateRoutes')
           // 动态添加可访问的路由, 注意将lastRoute放在最后
@@ -47,7 +46,7 @@ router.beforeEach(async(to, from, next) => {
           router.addRoutes([...asyncRoutes, lastRoute])
           // console.log('asyncRoutes', asyncRoutes.concat(lastRoute))
           // 跳转到目标路由去, 只是强制用替换模式
-          next({ ...to, replace: true })   
+          next({ ...to, replace: true })
         } catch (error) { // 如果请求处理过程中出错
           // 重置token
           await store.dispatch('user/resetToken')

@@ -11,7 +11,7 @@ module.exports = {
   /* 
   是否固定主界面的Header部分
   */
-  fixedHeader: true,
+  fixedHeader: false,
 
   /* 
   是否显示主界面左侧Logo部分
