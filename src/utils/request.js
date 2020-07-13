@@ -13,12 +13,18 @@ import { Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
+
 // 创建一个新的axios
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
+  // baseURL: 'http://182.92.128.115',
   
-  timeout: 20000 //请求超时时间
+  timeout: 20000, //请求超时时间,
+  // headers: {
+  //   'Access-Control-Allow-Credentials': true
+  // }
 })
+// service.defaults.withCredentials = true
 
 // 请求拦截器
 service.interceptors.request.use(
@@ -67,4 +73,8 @@ service.interceptors.response.use(
   }
 )
 
+axios.defaults.withCredentials = true
+axios('http://localhost:3000/test')
+
 export default service
+

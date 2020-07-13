@@ -28,7 +28,13 @@ const mutations = {
   
   TOGGLE_DEVICE: (state, device) => {
     state.device = device
-  }
+  },
+
+  xxx (state) {
+    setTimeout(() => {
+      state.device = 'abc'
+    }, 1);
+  } 
 }
 
 const actions = {
